@@ -1,32 +1,33 @@
 package main
 
 import (
+	"./views"
 	"fmt"
 	"github.com/gorilla/mux"
-	"html/template"
+	//"html/template"
 	"log"
 	"net/http"
 )
 
-var homeTemplate, aboutTemplate, contactTemplate *template.Template
+var homeView, aboutView, contactView *views.View
 
 func home(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
-	if err := homeTemplate.Execute(w, nil); err != nil {
+	if err := homeView.Template.ExecuteTemplate(w, homeView.Layout, nil); err != nil {
 		fmt.Fprintf(w, "<h1>Error</h1>")
 	}
 }
 
 func contact(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
-	if err := contactTemplate.Execute(w, nil); err != nil {
+	if err := contactView.Template.ExecuteTemplate(w, contactView.Layout, nil); err != nil {
 		log.Fatal(err)
 	}
 }
 
 func about(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
-	if err := aboutTemplate.Execute(w, nil); err != nil {
+	if err := aboutView.Template.ExecuteTemplate(w, aboutView.Layout, nil); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -37,24 +38,17 @@ func faq(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleError(err error) {
-	log.Panicln(err)
+	if err != nil {
+		log.Panicln(err)
+	}
 }
 
 func main() {
 
-	var err error
-	homeTemplate, err = template.ParseFiles("views/home.gohtml")
-	if err != nil {
-		log.Fatal(err)
-	}
-	contactTemplate, err = template.ParseFiles("views/contact.gohtml")
-	if err != nil {
-		log.Fatal(err)
-	}
-	aboutTemplate, err = template.ParseFiles("views/aboutTemplate.gohtml")
-	if err != nil {
-		log.Fatal(err)
-	}
+	//var err error
+	homeView = views.NewView("bootstrap", "views/home.gohtml")
+	contactView = views.NewView("bootstrap", "views/contact.gohtml")
+	aboutView = views.NewView("bootstrap", "views/about.gohtml")
 
 	r := mux.NewRouter()
 
