@@ -9,27 +9,32 @@ import (
 	"net/http"
 )
 
-var homeView, aboutView, contactView *views.View
+var (
+	homeView    *views.View
+	aboutView   *views.View
+	contactView *views.View
+	signupView  *views.View
+)
 
 func home(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
-	if err := homeView.Template.ExecuteTemplate(w, homeView.Layout, nil); err != nil {
-		fmt.Fprintf(w, "<h1>Error</h1>")
-	}
+	handleError(homeView.Render(w, nil))
 }
 
 func contact(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
-	if err := contactView.Template.ExecuteTemplate(w, contactView.Layout, nil); err != nil {
-		log.Fatal(err)
-	}
+	handleError(contactView.Render(w, nil))
+
 }
 
 func about(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
-	if err := aboutView.Template.ExecuteTemplate(w, aboutView.Layout, nil); err != nil {
-		log.Fatal(err)
-	}
+	handleError(aboutView.Render(w, nil))
+}
+
+func signup(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html")
+	handleError(signupView.Render(w, nil))
 }
 
 func faq(w http.ResponseWriter, r *http.Request) {
@@ -49,12 +54,14 @@ func main() {
 	homeView = views.NewView("bootstrap", "views/home.gohtml")
 	contactView = views.NewView("bootstrap", "views/contact.gohtml")
 	aboutView = views.NewView("bootstrap", "views/about.gohtml")
+	signupView = views.NewView("bootstrap", "views/signup.gohtml")
 
 	r := mux.NewRouter()
 
 	r.HandleFunc("/", home)
 	r.HandleFunc("/contact", contact)
 	r.HandleFunc("/about", about)
+	r.HandleFunc("/signup", signup)
 	r.HandleFunc("/faq", faq)
 	//http.HandleFunc("/", handlerFunc)
 
