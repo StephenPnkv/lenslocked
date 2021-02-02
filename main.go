@@ -2,11 +2,19 @@ package main
 
 import (
 	"./controllers"
+	"./models"
 	"./views"
 	"fmt"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
+)
+
+const (
+  host = "localhost"
+  port = 5432
+  user = "postgres"
+  dbname= "lenslocked_dev"
 )
 
 var (
@@ -43,19 +51,32 @@ func handleError(err error) {
 }
 
 func main() {
+	//Create a connection db connection string
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s dbname=%s sslmode=disable", host, port, user, dbname)
+	//Create user service
+	userService, err := models.NewUserService(psqlInfo)
+  if err != nil{
+    log.Panicln(err)
+  }
+  defer userService.Close()
+  userService.DestructiveReset()
 
-	//var err error
-	staticCon := controllers.NewStatic()
-	usersCon := controllers.NewUser()
+	//Controllers
+	staticController := controllers.NewStatic()
+	userController := controllers.NewUsers(userService)
+
+	//Routing
 	r := mux.NewRouter()
 
-	r.Handle("/", staticCon.Home).Methods("GET")
-	r.Handle("/contact", staticCon.Contact).Methods("GET")
-	r.Handle("/about", staticCon.About).Methods("GET")
-	r.HandleFunc("/signup", usersCon.New).Methods("GET")
-	r.HandleFunc("/signup", usersCon.Create).Methods("POST")
-	//r.HandleFunc("/faq", faq).Methods("GET")
-	//http.HandleFunc("/", handlerFunc)
+	r.Handle("/", staticController.Home).Methods("GET")
+	r.Handle("/contact", staticController.Contact).Methods("GET")
+	r.Handle("/about", staticController.About).Methods("GET")
+
+	r.HandleFunc("/signup", userController.New).Methods("GET")
+	r.HandleFunc("/signup", userController.Create).Methods("POST")
+
+	r.Handle("/login", userController.LoginView).Methods("GET")
+	r.HandleFunc("/login", userController.Login).Methods("POST")
 
 	http.ListenAndServe(":3000", r)
 }

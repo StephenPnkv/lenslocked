@@ -2,7 +2,7 @@
 package main
 
 import (
-  "database/sql"
+  _ "database/sql"
   "fmt"
   _ "github.com/lib/pq"
   "../models"
@@ -26,10 +26,32 @@ func main(){
   defer us.Close()
   us.DestructiveReset()
 
-  usr, err := us.ByID(1)
+  user := models.User{
+    Name: "Stephen Penkov",
+    Email: "stephenpnkv@gmail.com",
+  }
+  if err := us.Create(&user); err != nil{
+    panic(err)
+  }
+
+  usr, err := us.ByEmail("stephenpnkv@gmail.com")
   if err != nil{
     panic(err)
   }
 
+  user.Name = "John Smith"
+  if err := us.Update(&user); err != nil{
+    panic(err)
+  }
+
+  err = us.Delete(1)
+  if err != nil{
+    panic(err)
+  }
+
+  usr, err = us.ByEmail("stephenpnkv@gmail.com")
+  if err != nil{
+    panic(err)
+  }
   fmt.Println(usr)
 }
