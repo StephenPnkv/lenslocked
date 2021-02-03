@@ -1,11 +1,11 @@
 package controllers
 
 import (
-	"../views"
+	"lenslocked/views"
 	"fmt"
 	"log"
 	"net/http"
-	"../models"
+	"lenslocked/models"
 )
 
 type Users struct {
@@ -69,14 +69,23 @@ func (u *Users) Login(w http.ResponseWriter, r *http.Request){
 
 	//Authenticate user
 	user, err := u.us.Authenticate(form.Email, form.Password)
-	switch err {
-	case models.ErrNotFound:
-		fmt.Fprintln(w, "Invalid email provided!")
-	case models.ErrInvalidPassword:
-		fmt.Fprintln(w, "Invalid password provided!")
-	case nil:
-		fmt.Fprintln(w, user)
-	default:
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	if err != nil{
+		switch err {
+		case models.ErrNotFound:
+			fmt.Fprintln(w, "Invalid email provided!")
+		case models.ErrInvalidPassword:
+			fmt.Fprintln(w, "Invalid password provided!")
+		default:
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		return
 	}
+	//Create and set cookie
+	cookie := http.Cookie{
+		Name: "email",
+		Value: user.Email,
+	}
+	http.SetCookie(w, &cookie)
+	fmt.Fprintln(w, user)
+
 }

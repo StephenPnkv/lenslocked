@@ -1,9 +1,9 @@
 package main
 
 import (
-	"./controllers"
-	"./models"
-	"./views"
+	"lenslocked/controllers"
+	"lenslocked/models"
+	"lenslocked/views"
 	"fmt"
 	"github.com/gorilla/mux"
 	"log"

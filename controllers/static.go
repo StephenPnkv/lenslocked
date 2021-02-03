@@ -2,7 +2,7 @@
 
 package controllers
 import (
-  "../views"
+  "lenslocked/views"
 )
 
 func NewStatic() *Static{
