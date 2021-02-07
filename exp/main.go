@@ -7,6 +7,7 @@ import (
   _ "github.com/lib/pq"
 //  "lenslocked/models"
   "lenslocked/rand"
+  "lenslocked/hash"
 )
 
 const (
@@ -18,7 +19,10 @@ const (
 
 
 func main(){
-  fmt.Println(rand.String(10))
-  fmt.Println(rand.RememberToken())
+  //fmt.Println(rand.String(10))
+  //fmt.Println(rand.RememberToken())
+
+  hmac := hash.NewHMAC("secret-key")
+  fmt.Println(hmac.Hash("HashingThisString"))
 
 }
