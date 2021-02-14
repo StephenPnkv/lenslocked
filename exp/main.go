@@ -5,9 +5,8 @@ import (
   _ "database/sql"
   "fmt"
   _ "github.com/lib/pq"
-//  "lenslocked/models"
-  "lenslocked/rand"
-  "lenslocked/hash"
+  "lenslocked/models"
+  "log"
 )
 
 const (
@@ -17,12 +16,38 @@ const (
   dbname= "lenslocked_dev"
 )
 
+func logError(err error){
+  if err != nil {
+    log.Fatal(err)
+  }
+}
 
 func main(){
-  //fmt.Println(rand.String(10))
-  //fmt.Println(rand.RememberToken())
+  psqlInfo := fmt.Sprintf("host=%s port=%d user=%s dbname=%s sslmode=disable", host, port, user, dbname)
 
-  hmac := hash.NewHMAC("secret-key")
-  fmt.Println(hmac.Hash("HashingThisString"))
+  us, err := models.NewUserService(psqlInfo)
+  if err != nil{
+    panic(err)
+  }
+  defer us.Close()
+  us.DestructiveReset()
+
+  user := models.User{
+    Name: "Stephen Penkov",
+    Email: "stephenpnkv@gmail.com",
+    Password: "abc123",
+  }
+  err = us.Create(&user)
+  logError(err)
+
+  fmt.Printf("%+v\n", user)
+  if user.Remember == ""{
+    panic("Invalid remember token.")
+  }
+
+  //check remember token
+  user2, err := us.ByRememberToken(user.Remember)
+  logError(err)
+  fmt.Printf("%+v\n", *user2)
 
 }
