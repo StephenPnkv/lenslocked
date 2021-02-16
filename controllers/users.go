@@ -26,7 +26,7 @@ type LoginForm struct{
 	Password string `schema:"password"`
 }
 
-func NewUsers(us *models.UserService) *Users {
+func NewUsers(us models.UserService) *Users {
 	return &Users{
 		NewView: views.NewView("bootstrap","users/signup"),
 		LoginView: views.NewView("bootstrap","users/login"),
@@ -131,13 +131,13 @@ func (u *Users) signIn(w http.ResponseWriter, user *models.User) error{
 func (u *Users) CookieTest(w http.ResponseWriter, r *http.Request){
 	cookie, err := r.Cookie("remember_token")
 	if err != nil{
-		http.Error(w, error.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	user, err := u.us.ByRemember(cookie.Value)
 	if err != nil{
-		http.Error(w, error.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	fmt.Fprintln(w, user)
