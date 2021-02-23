@@ -54,13 +54,13 @@ func main() {
 	//Create a connection db connection string
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s dbname=%s sslmode=disable", host, port, user, dbname)
 	//Create user service
-	userService, err := models.NewUserService(psqlInfo)
-  if err != nil{
-    log.Panicln(err)
-  }
-  defer userService.Close()
-  userService.DestructiveReset()
-
+	services, err := models.NewServices(psqlInfo)
+	if err != nil{
+		log.Panicln(err)
+	}
+	defer services.Close()
+	services.User.AutoMigrate()
+	
 	//Controllers
 	staticController := controllers.NewStatic()
 	userController := controllers.NewUsers(userService)
