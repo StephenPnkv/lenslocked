@@ -21,6 +21,7 @@ type SignupForm struct{
 	Password string `schema: "password"`
 }
 
+
 type LoginForm struct{
 	Email string `schema:"email"`
 	Password string `schema:"password"`
@@ -34,24 +35,24 @@ func NewUsers(us models.UserService) *Users {
 	}
 }
 
-// @route: GET /signup
-// @desc: Renders sign in view
-// @access: Public
-
-func (u *Users) New(w http.ResponseWriter, r *http.Request) {
-	if err := u.NewView.Render(w, nil); err != nil {
+func (u *Users) New(w http.ResponseWriter, r *http.Request){
+	if err := u.NewView.Render(w, nil); err != nil{
 		log.Panicln(err)
 	}
 }
+
 
 // @route: POST /signup
 // @desc: User is able to fill out the form and create an account
 // @access: Public
 func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
-
+	var vData views.Data
 	form := SignupForm{}
 	if err := parseForm(r, &form); err != nil{
 		log.Panicln(err)
+		vData.SetAlert(err)
+		u.NewView.Render(w,vData)
+		return
 	}
 	user := models.User{
 		Name: form.Name,
@@ -59,13 +60,14 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 		Password: form.Password,
 	}
 	if err := u.us.Create(&user); err != nil{
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		vData.SetAlert(err)
+		u.NewView.Render(w, vData)
 		return
 	}
 
 	err := u.signIn(w, &user)
 	if err != nil{
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
 
@@ -88,7 +90,7 @@ func (u *Users) Login(w http.ResponseWriter, r *http.Request){
 		switch err {
 		case models.ErrNotFound:
 			fmt.Fprintln(w, "Invalid email provided!")
-		case models.ErrInvalidPassword:
+		case models.ErrPasswordInvalid:
 			fmt.Fprintln(w, "Invalid password provided!")
 		default:
 			http.Error(w, err.Error(), http.StatusInternalServerError)

@@ -8,7 +8,7 @@ import (
 
 const RememberTokenBytes = 32
 
-//Function returns a remember token 
+//Function returns a remember token
 func RememberToken() (string, error){
   return String(RememberTokenBytes)
 }
@@ -23,6 +23,15 @@ func Bytes(n int) ([]byte, error){
   }
 
   return bytes, nil
+}
+
+//Utility function that returns the number of bytes in the remember token.
+func Nbytes(base64String string) (int, error){
+  b, err := base64.URLEncoding.DecodeString(base64String)
+  if err != nil{
+    return -1, err
+  }
+  return len(b), nil
 }
 
 //Function generates a base64 encoded string
