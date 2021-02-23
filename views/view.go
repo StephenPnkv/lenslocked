@@ -2,9 +2,11 @@ package views
 
 import (
 	"html/template"
+	"io"
 	"log"
 	"net/http"
 	"path/filepath"
+	"bytes"
 )
 
 var (
@@ -57,13 +59,19 @@ func (v *View) Render(w http.ResponseWriter, data interface{}) error {
 			Yield: data,
 		}
 	}
-	return v.Template.ExecuteTemplate(w, v.Layout, data)
+	//Create a buffer to load the layout to recover from rendering errors.
+	var buffer bytes.Buffer
+	err := v.Template.ExecuteTemplate(&buffer, v.Layout, data)
+	if err != nil{
+		http.Error(w, "Oops! Something went wrong. If the problem persists, please contact us.")
+		return
+	}
+	//Use io package to copy buffer contents into ResponseWriter
+	io.Copy(w, &buf)
 }
 
 func (v *View) ServeHTTP(w http.ResponseWriter, r *http.Request){
-	if err := v.Render(w,nil); err != nil{
-		panic(err)
-	}
+	v.Render(w,nil)
 }
 
 type View struct {

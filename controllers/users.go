@@ -36,11 +36,8 @@ func NewUsers(us models.UserService) *Users {
 }
 
 func (u *Users) New(w http.ResponseWriter, r *http.Request){
-	if err := u.NewView.Render(w, nil); err != nil{
-		log.Panicln(err)
-	}
+	u.NewView.Render(w, nil)
 }
-
 
 // @route: POST /signup
 // @desc: User is able to fill out the form and create an account
@@ -78,10 +75,13 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 // @desc: User is logged in and redirected back to the home page
 // @access: Public
 func (u *Users) Login(w http.ResponseWriter, r *http.Request){
+	var vData views.Data
 	//Parse the form
 	form := LoginForm{}
 	if err := parseForm(r, &form); err != nil{
-		log.Panicln(err)
+		vData.SetAlert(err)
+		u.LoginView.Render(w,vd)
+		return
 	}
 
 	//Authenticate user
@@ -89,22 +89,21 @@ func (u *Users) Login(w http.ResponseWriter, r *http.Request){
 	if err != nil{
 		switch err {
 		case models.ErrNotFound:
-			fmt.Fprintln(w, "Invalid email provided!")
-		case models.ErrPasswordInvalid:
-			fmt.Fprintln(w, "Invalid password provided!")
+			vData.AlertError("No user exists with the provided email address.")
 		default:
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			vData.SetAlert(err)
 		}
+		u.LoginView.Render(w, vData)
 		return
 	}
 
 	//Sign in user
 	err = u.signIn(w, user)
 	if err != nil{
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		vData.SetAlert(err)
+		u.LoginView.Render(w, vData)
 		return
 	}
-
 	http.Redirect(w, r, "/", http.StatusFound)
 }
 
